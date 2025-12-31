@@ -10,7 +10,7 @@
 import { extractConversationContext, insertIntoComposeBox, buildAIPrompt, buildSummaryPrompt } from '../utils/message-extractor.js';
 import { getTemplates, getPreferences } from '../utils/storage.js';
 import { generateResponse, buildWebInterfaceUrl, getConfiguredProviders, getProviderConfig } from '../utils/ai-client.js';
-import { getContext, getAllOpenConversations } from '../utils/linkedin-selectors.js';
+import { getAllOpenConversations } from '../utils/linkedin-selectors.js';
 
 // State
 let panelVisible = false;
@@ -191,7 +191,20 @@ function createPanel() {
       <label>What would you like to say?</label>
       <textarea class="li-assistant-intent" placeholder="e.g., Politely decline but wish them luck..."></textarea>
     </div>
-    
+
+    <div class="li-assistant-section li-assistant-tone-section">
+      <label>Tone</label>
+      <div class="li-assistant-tone-options">
+        <button class="li-assistant-tone-btn" data-tone="match">Match tone</button>
+        <button class="li-assistant-tone-btn active" data-tone="professional">Professional</button>
+        <button class="li-assistant-tone-btn" data-tone="casual">Casual</button>
+        <button class="li-assistant-tone-btn" data-tone="brief">Brief</button>
+        <button class="li-assistant-tone-btn" data-tone="enthusiastic">Enthusiastic</button>
+        <button class="li-assistant-tone-btn" data-tone="custom">Custom</button>
+      </div>
+      <input type="text" class="li-assistant-custom-tone" placeholder="e.g., sarcastic, formal British, Gen-Z..." style="display: none;">
+    </div>
+
     <div class="li-assistant-actions">
       <button class="li-assistant-btn secondary" id="li-open-external">
         Open in Claude ↗
@@ -223,6 +236,23 @@ function createPanel() {
   panel.querySelector('#li-copy').addEventListener('click', handleCopy);
   panel.querySelector('#li-insert').addEventListener('click', handleInsert);
   panel.querySelector('#li-summarize').addEventListener('click', handleSummarize);
+
+  // Tone button toggles
+  panel.querySelectorAll('.li-assistant-tone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      panel.querySelectorAll('.li-assistant-tone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Show/hide custom tone input
+      const customInput = panel.querySelector('.li-assistant-custom-tone');
+      if (btn.dataset.tone === 'custom') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+      }
+    });
+  });
 
   // Prevent scroll from propagating to page
   panel.addEventListener('wheel', (e) => {
@@ -307,6 +337,17 @@ async function handleGenerate() {
     return;
   }
 
+  // Get selected tone and custom instructions
+  const selectedTone = panel.querySelector('.li-assistant-tone-btn.active')?.dataset.tone || 'professional';
+  const customToneInput = panel.querySelector('.li-assistant-custom-tone').value.trim();
+
+  // Validate custom tone has input
+  if (selectedTone === 'custom' && !customToneInput) {
+    showToast('Please enter a custom tone description');
+    panel.querySelector('.li-assistant-custom-tone').focus();
+    return;
+  }
+
   // Show loading state with provider name
   const preferences = await getPreferences();
   const providerConfig = getProviderConfig(preferences.preferredProvider);
@@ -317,7 +358,7 @@ async function handleGenerate() {
   panel.querySelector('.li-assistant-result').style.display = 'none';
 
   try {
-    const prompt = buildAIPrompt(currentContext, intent);
+    const prompt = buildAIPrompt(currentContext, intent, selectedTone, customToneInput);
     const result = await generateResponse(prompt);
 
     // Show result
@@ -363,7 +404,9 @@ async function handleInsert() {
   const response = document.querySelector('.li-assistant-response').textContent;
 
   try {
-    await insertIntoComposeBox(response);
+    // Pass the selected conversation's container to insert into the correct bubble
+    const container = selectedConversation?.container || null;
+    await insertIntoComposeBox(response, container);
     showToast('Inserted into message box');
     closePanel();
   } catch (error) {
@@ -457,7 +500,8 @@ function handleMessage(message, sender, sendResponse) {
   }
   
   if (message.action === 'insertText') {
-    insertIntoComposeBox(message.text)
+    const container = selectedConversation?.container || null;
+    insertIntoComposeBox(message.text, container)
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;

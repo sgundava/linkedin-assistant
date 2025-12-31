@@ -43,7 +43,7 @@ export async function extractConversationContext(providedContainer = null, provi
     // Wait for messages to load
     await waitForElement(selectors.messageItem, 3000);
 
-    const result = {
+    return {
       success: true,
       context: contextType,
       senderName: extractSenderName(selectors, container),
@@ -51,8 +51,6 @@ export async function extractConversationContext(providedContainer = null, provi
       recentMessages: extractRecentMessages(selectors, 5, container),
       timestamp: new Date().toISOString()
     };
-
-    return result;
   } catch (error) {
     return {
       success: false,
@@ -155,38 +153,82 @@ function isMessageFromOther(messageElement) {
 
 /**
  * Insert text into the compose box
+ * @param {string} text - The text to insert
+ * @param {Element} container - Optional container to scope the search (for multi-bubble support)
  */
-export async function insertIntoComposeBox(text) {
+export async function insertIntoComposeBox(text, container = null) {
   const selectors = getContextSelectors();
-  
+
   if (!selectors) {
     throw new Error('Not on a LinkedIn messaging page');
   }
-  
-  const composeBox = await waitForElement(selectors.composeBox || selectors.anyComposeBox, 3000);
-  
+
+  // Find compose box within the specified container, or fall back to document
+  const searchRoot = container || document;
+  let composeBox = searchRoot.querySelector(selectors.composeBox) ||
+                   searchRoot.querySelector(selectors.anyComposeBox);
+
+  // If not found in container, wait for it
+  if (!composeBox) {
+    composeBox = await waitForElement(selectors.composeBox || selectors.anyComposeBox, 3000);
+  }
+
   if (!composeBox) {
     throw new Error('Could not find compose box');
   }
-  
+
   // Focus the compose box
   composeBox.focus();
-  
+
   // Clear existing content and insert new text
   // Using execCommand for better compatibility with contenteditable
   document.execCommand('selectAll', false, null);
   document.execCommand('insertText', false, text);
-  
+
   // Dispatch input event so LinkedIn's JS picks up the change
   composeBox.dispatchEvent(new Event('input', { bubbles: true }));
-  
+
   return true;
 }
 
 /**
- * Build a prompt for the AI based on extracted context
+ * Tone configurations for message generation
  */
-export function buildAIPrompt(conversationContext, userIntent, customInstructions = '') {
+const TONE_CONFIG = {
+  professional: {
+    description: 'professional',
+    instructions: 'Keep it polished and business-appropriate, but not stiff. Natural and confident.'
+  },
+  casual: {
+    description: 'casual and friendly',
+    instructions: 'Keep it warm and conversational, like messaging a colleague you get along with. Contractions are fine.'
+  },
+  brief: {
+    description: 'brief and direct',
+    instructions: 'Keep it short and to the point. No fluff, no filler. 1-2 sentences max.'
+  },
+  enthusiastic: {
+    description: 'enthusiastic and upbeat',
+    instructions: 'Show genuine excitement and energy. Positive and engaging, but not over-the-top.'
+  },
+  match: {
+    description: 'matching the conversation tone',
+    instructions: 'Analyze the tone of the conversation and mirror it. If they are casual, be casual. If formal, be formal. Match their energy and style.'
+  },
+  custom: {
+    description: 'custom',
+    instructions: '' // Will be provided by user
+  }
+};
+
+/**
+ * Build a prompt for the AI based on extracted context
+ * @param {Object} conversationContext - The conversation context
+ * @param {string} userIntent - What the user wants to say
+ * @param {string} tone - The tone preset (or 'custom')
+ * @param {string} customToneInstructions - Custom tone instructions when tone='custom'
+ */
+export function buildAIPrompt(conversationContext, userIntent, tone = 'professional', customToneInstructions = '') {
   const { senderName, latestMessage, recentMessages } = conversationContext;
 
   let conversationHistory = '';
@@ -196,20 +238,28 @@ export function buildAIPrompt(conversationContext, userIntent, customInstruction
       .join('\n');
   }
 
-  const prompt = `You are helping draft a professional LinkedIn message response.
+  const toneConfig = TONE_CONFIG[tone] || TONE_CONFIG.professional;
 
-CONVERSATION CONTEXT:
-- Talking to: ${senderName}
-- Recent messages:
+  // For custom tone, use user-provided instructions
+  const toneDescription = tone === 'custom' && customToneInstructions
+    ? customToneInstructions
+    : toneConfig.description;
+  const toneInstructions = tone === 'custom' && customToneInstructions
+    ? customToneInstructions
+    : `${toneConfig.description}. ${toneConfig.instructions}`;
+
+  return `You are helping ME (the LinkedIn user) draft a reply TO ${senderName}.
+
+CONVERSATION HISTORY:
 ${conversationHistory || `${senderName}: ${latestMessage?.text || '[No message content found]'}`}
 
-USER'S INTENT: ${userIntent}
+WHAT I WANT TO SAY: ${userIntent}
 
-${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ''}
+TONE: ${toneInstructions}
 
-Transform the USER'S INTENT into a professional LinkedIn message. Keep it natural and not overly formal. Aim for 2-4 sentences unless more detail is needed. Output only the message text, nothing else.`;
+IMPORTANT: You are writing a message FROM me TO ${senderName}. Respond to what ${senderName} said, not echo it. If ${senderName} congratulated me, I should thank them — not congratulate them back.
 
-  return prompt;
+Transform my intent into a ${toneDescription} LinkedIn message. Output only the message text, nothing else.`;
 }
 
 /**
@@ -225,7 +275,7 @@ export function buildSummaryPrompt(conversationContext) {
       .join('\n');
   }
 
-  const prompt = `Summarize this LinkedIn conversation concisely.
+  return `Summarize this LinkedIn conversation concisely.
 
 CONVERSATION WITH: ${senderName}
 
@@ -238,6 +288,4 @@ Provide:
 3. **Key Points**: Any important details, dates, or requests mentioned.
 
 Keep it brief and actionable.`;
-
-  return prompt;
 }

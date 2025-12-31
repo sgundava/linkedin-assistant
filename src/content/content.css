@@ -362,3 +362,60 @@
     transform: translateY(-10px);
   }
 }
+
+/* Tone Selector */
+.li-assistant-tone-section {
+  padding: 8px 16px;
+}
+
+.li-assistant-tone-options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.li-assistant-tone-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.li-assistant-tone-btn:hover {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+
+.li-assistant-tone-btn.active {
+  background: #0a66c2;
+  border-color: #0a66c2;
+  color: white;
+}
+
+/* Custom Tone Input */
+.li-assistant-custom-tone {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.li-assistant-custom-tone:focus {
+  outline: none;
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.15);
+}
+
+.li-assistant-custom-tone::placeholder {
+  color: #999;
+  font-style: italic;
+}
