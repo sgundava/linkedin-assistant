@@ -286,6 +286,7 @@ Provide:
 1. **Summary** (1-2 sentences): What is this conversation about?
 2. **Action Items** (if any): What needs to be done or responded to?
 3. **Key Points**: Any important details, dates, or requests mentioned.
+4. **Suggested Response**: A brief intent for replying (e.g., "Thank them and close the loop", "Ask for more details about the role", "Politely decline"). If no response is needed, say "No response needed".
 
 Keep it brief and actionable.`;
 }
