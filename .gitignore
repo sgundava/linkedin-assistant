@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output (regenerated via npm run build)
+dist/
+
+# Package files
+*.zip
+linkedin-assistant.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment/secrets (API keys should never be committed)
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,364 @@
+/**
+ * LinkedIn Message Assistant - Content Script Styles
+ */
+
+/* Floating Action Button */
+#li-assistant-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 9999;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#li-assistant-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.5);
+}
+
+#li-assistant-fab:active {
+  transform: scale(0.95);
+}
+
+/* Main Panel */
+#li-assistant-panel {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 380px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header */
+.li-assistant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.li-assistant-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.li-assistant-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.li-assistant-close:hover {
+  background: #e0e0e0;
+}
+
+/* Conversation Selector */
+.li-assistant-conversation-selector {
+  padding: 12px 16px;
+  background: #fff7ed;
+  border-bottom: 1px solid #fed7aa;
+}
+
+.li-assistant-conversation-selector label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a3412;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.li-assistant-conversation-select {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  background: white;
+  color: #1a1a1a;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.li-assistant-conversation-select:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
+/* Context Section */
+.li-assistant-context {
+  padding: 12px 16px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.li-assistant-sender {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0a66c2;
+  margin-bottom: 4px;
+}
+
+.li-assistant-message {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* Summarize Button */
+.li-assistant-summarize-btn {
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Summary Section */
+.li-assistant-summary {
+  padding: 12px 16px;
+  background: #f0fff4;
+  border-bottom: 1px solid #c6f6d5;
+}
+
+.li-assistant-summary label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #276749;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.li-assistant-summary-content {
+  background: white;
+  border: 1px solid #c6f6d5;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #2d3748;
+  white-space: pre-wrap;
+}
+
+/* Sections */
+.li-assistant-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.li-assistant-section label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* Templates */
+.li-assistant-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.li-assistant-template-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid #0a66c2;
+  border-radius: 16px;
+  background: white;
+  color: #0a66c2;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.li-assistant-template-btn:hover {
+  background: #0a66c2;
+  color: white;
+}
+
+/* Intent Textarea */
+.li-assistant-intent {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.li-assistant-intent:focus {
+  outline: none;
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 2px rgba(10, 102, 194, 0.15);
+}
+
+/* Actions */
+.li-assistant-actions {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.li-assistant-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.li-assistant-btn.primary {
+  background: #0a66c2;
+  color: white;
+  border: none;
+}
+
+.li-assistant-btn.primary:hover {
+  background: #004182;
+}
+
+.li-assistant-btn.secondary {
+  background: white;
+  color: #0a66c2;
+  border: 1px solid #0a66c2;
+}
+
+.li-assistant-btn.secondary:hover {
+  background: #f0f7ff;
+}
+
+/* Result Section */
+.li-assistant-result {
+  padding: 12px 16px;
+  background: #f8f9fa;
+}
+
+.li-assistant-result label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.li-assistant-response {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.li-assistant-result-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Loading State */
+.li-assistant-loading {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #666;
+}
+
+.li-assistant-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #0a66c2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.li-assistant-toast {
+  position: fixed;
+  bottom: 160px;
+  right: 24px;
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+.li-assistant-toast.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

@@ -1,0 +1,411 @@
+/* Popup Styles */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: #fff;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+/* Header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  color: white;
+}
+
+.popup-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.version {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Tabs */
+.popup-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab:hover {
+  color: #0a66c2;
+  background: #f0f7ff;
+}
+
+.tab.active {
+  color: #0a66c2;
+  border-bottom: 2px solid #0a66c2;
+  margin-bottom: -1px;
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Status Card */
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.status-indicator.ready {
+  background: #22c55e;
+}
+
+.status-indicator.no-key {
+  background: #f59e0b;
+}
+
+.status-indicator.error {
+  background: #ef4444;
+}
+
+/* Info Box */
+.info-box {
+  padding: 12px;
+  background: #f0f7ff;
+  border-radius: 8px;
+  border-left: 3px solid #0a66c2;
+  margin-bottom: 16px;
+}
+
+.info-box p {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 10px 16px;
+  border: 1px solid #0a66c2;
+  border-radius: 8px;
+  background: white;
+  color: #0a66c2;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.action-btn:hover {
+  background: #0a66c2;
+  color: white;
+}
+
+/* Templates List */
+.templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.template-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.template-item .name {
+  font-weight: 500;
+}
+
+.template-item .actions {
+  display: flex;
+  gap: 4px;
+}
+
+.template-item .actions button {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.template-item .actions button:hover {
+  opacity: 1;
+}
+
+.add-template-btn {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background: none;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.add-template-btn:hover {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+
+/* Template Editor */
+.template-editor {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.template-editor input,
+.template-editor textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.template-editor textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Settings */
+.settings-group {
+  margin-bottom: 24px;
+}
+
+.settings-group h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.settings-note {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* Provider Cards */
+.provider-cards {
+  display: flex;
+  gap: 8px;
+}
+
+.provider-card {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.provider-card:hover {
+  border-color: #0a66c2;
+}
+
+.provider-card.selected {
+  border-color: #0a66c2;
+  background: #f0f7ff;
+}
+
+.provider-card .name {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.provider-card .status {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.provider-card .status.configured {
+  color: #22c55e;
+}
+
+/* API Key Form */
+.api-key-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.api-key-form label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.api-key-form select,
+.api-key-form input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.key-input-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input-wrapper input {
+  flex: 1;
+}
+
+.toggle-visibility {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.get-key-link {
+  font-size: 13px;
+  color: #0a66c2;
+  text-decoration: none;
+}
+
+.get-key-link:hover {
+  text-decoration: underline;
+}
+
+/* Checkbox */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn.primary {
+  background: #0a66c2;
+  color: white;
+  border: none;
+}
+
+.btn.primary:hover {
+  background: #004182;
+}
+
+.btn.secondary {
+  background: white;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.btn.secondary:hover {
+  background: #f8f9fa;
+}
+
+/* Footer */
+.popup-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 12px;
+}
+
+.popup-footer a {
+  color: #666;
+  text-decoration: none;
+}
+
+.popup-footer a:hover {
+  color: #0a66c2;
+}
+
+.popup-footer span {
+  color: #ccc;
+}

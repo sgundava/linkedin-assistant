@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Message Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>LinkedIn Assistant</h1>
+      <span class="version">v0.1.0</span>
+    </header>
+
+    <nav class="popup-tabs">
+      <button class="tab active" data-tab="main">Home</button>
+      <button class="tab" data-tab="templates">Templates</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <!-- Main Tab -->
+    <section class="tab-content active" id="tab-main">
+      <div class="status-card">
+        <div class="status-indicator" id="status-indicator"></div>
+        <span id="status-text">Checking status...</span>
+      </div>
+
+      <div class="info-box">
+        <p>Open a LinkedIn conversation and click the floating button to get started.</p>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-btn" id="open-linkedin">
+          Open LinkedIn Messaging
+        </button>
+      </div>
+    </section>
+
+    <!-- Templates Tab -->
+    <section class="tab-content" id="tab-templates">
+      <div class="templates-list" id="templates-list">
+        <!-- Populated by JS -->
+      </div>
+      
+      <button class="add-template-btn" id="add-template">
+        + Add Template
+      </button>
+
+      <div class="template-editor" id="template-editor" style="display: none;">
+        <input type="text" id="template-name" placeholder="Template name">
+        <textarea id="template-content" placeholder="Template content..."></textarea>
+        <div class="editor-actions">
+          <button class="btn secondary" id="cancel-template">Cancel</button>
+          <button class="btn primary" id="save-template">Save</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Tab -->
+    <section class="tab-content" id="tab-settings">
+      <div class="settings-group">
+        <h3>AI Provider</h3>
+        <div class="provider-cards" id="provider-cards">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>API Keys</h3>
+        <p class="settings-note">Keys are stored locally on this device only.</p>
+        
+        <div class="api-key-form">
+          <label for="provider-select">Provider</label>
+          <select id="provider-select">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI (GPT)</option>
+          </select>
+          
+          <label for="api-key-input">API Key</label>
+          <div class="key-input-wrapper">
+            <input type="password" id="api-key-input" placeholder="sk-...">
+            <button class="toggle-visibility" id="toggle-key-visibility">👁</button>
+          </div>
+          
+          <button class="btn primary" id="save-api-key">Save Key</button>
+          
+          <a href="#" class="get-key-link" id="get-key-link" target="_blank">
+            Get API key →
+          </a>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Preferences</h3>
+        
+        <label class="checkbox-label">
+          <input type="checkbox" id="pref-floating-btn" checked>
+          Show floating button on LinkedIn
+        </label>
+        
+        <label class="checkbox-label">
+          <input type="checkbox" id="pref-auto-insert">
+          Auto-insert templates (skip preview)
+        </label>
+      </div>
+    </section>
+
+    <footer class="popup-footer">
+      <a href="https://github.com/yourname/linkedin-assistant" target="_blank">GitHub</a>
+      <span>•</span>
+      <a href="#" id="feedback-link">Send Feedback</a>
+    </footer>
+  </div>
+
+  <script src="../../dist/popup.js"></script>
+</body>
+</html>
