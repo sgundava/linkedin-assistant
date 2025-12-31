@@ -1,7 +1,7 @@
 # Terms of Service
 
 **LinkedIn Message Assistant**
-*Last updated: December 2024*
+*Last updated: December 2025*
 
 ## Agreement to Terms
 
