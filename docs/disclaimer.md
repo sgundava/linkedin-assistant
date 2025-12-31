@@ -96,7 +96,7 @@ By using this Extension, you accept that:
 
 This Extension is open source. You can review the code yourself:
 
-**[GitHub Repository](https://github.com/yourusername/linkedin-assistant)**
+**[GitHub Repository](https://github.com/sgundava/linkedin-assistant)**
 
 If you find issues, please report them or contribute fixes.
 

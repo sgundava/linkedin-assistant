@@ -122,7 +122,7 @@ If any provision of these Terms is found to be unenforceable, the remaining prov
 
 ## Contact
 
-For questions about these Terms, please open an issue on our [GitHub repository](https://github.com/yourusername/linkedin-assistant).
+For questions about these Terms, please open an issue on our [GitHub repository](https://github.com/sgundava/linkedin-assistant).
 
 ---
 

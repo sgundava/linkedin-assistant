@@ -103,7 +103,7 @@ We may update this privacy policy from time to time. Changes will be reflected i
 
 This extension is fully open source. You can audit the complete source code at:
 
-**[GitHub Repository](https://github.com/yourusername/linkedin-assistant)**
+**[GitHub Repository](https://github.com/sgundava/linkedin-assistant)**
 
 ---
 
