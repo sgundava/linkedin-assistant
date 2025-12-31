@@ -9,7 +9,7 @@
 
 import { extractConversationContext, insertIntoComposeBox, buildAIPrompt, buildSummaryPrompt } from '../utils/message-extractor.js';
 import { getTemplates, getPreferences } from '../utils/storage.js';
-import { generateResponse, buildWebInterfaceUrl, getConfiguredProviders } from '../utils/ai-client.js';
+import { generateResponse, buildWebInterfaceUrl, getConfiguredProviders, getProviderConfig } from '../utils/ai-client.js';
 import { getContext, getAllOpenConversations } from '../utils/linkedin-selectors.js';
 
 // State
@@ -212,7 +212,7 @@ function createPanel() {
     
     <div class="li-assistant-loading" style="display: none;">
       <div class="li-assistant-spinner"></div>
-      <span>Generating...</span>
+      <span class="li-assistant-loading-text">Generating...</span>
     </div>
   `;
   
@@ -307,7 +307,12 @@ async function handleGenerate() {
     return;
   }
 
-  // Show loading state
+  // Show loading state with provider name
+  const preferences = await getPreferences();
+  const providerConfig = getProviderConfig(preferences.preferredProvider);
+  const providerName = providerConfig?.name?.split(' ')[0] || 'AI';
+
+  panel.querySelector('.li-assistant-loading-text').textContent = `Generating with ${providerName}...`;
   panel.querySelector('.li-assistant-loading').style.display = 'flex';
   panel.querySelector('.li-assistant-result').style.display = 'none';
 
@@ -381,7 +386,12 @@ async function handleSummarize() {
     return;
   }
 
-  // Show loading state
+  // Show loading state with provider name
+  const preferences = await getPreferences();
+  const providerConfig = getProviderConfig(preferences.preferredProvider);
+  const providerName = providerConfig?.name?.split(' ')[0] || 'AI';
+
+  panel.querySelector('.li-assistant-loading-text').textContent = `Summarizing with ${providerName}...`;
   panel.querySelector('.li-assistant-loading').style.display = 'flex';
   panel.querySelector('.li-assistant-summary').style.display = 'none';
 
