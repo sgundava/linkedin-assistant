@@ -207,7 +207,7 @@ USER'S INTENT: ${userIntent}
 
 ${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ''}
 
-Please draft a concise, professional response. Keep it natural and not overly formal. Aim for 2-4 sentences unless more detail is needed.`;
+Transform the USER'S INTENT into a professional LinkedIn message. Keep it natural and not overly formal. Aim for 2-4 sentences unless more detail is needed. Output only the message text, nothing else.`;
 
   return prompt;
 }
