@@ -63,6 +63,10 @@ async function handleApiRequest({ provider, apiKey, prompt, options = {} }) {
     openai: {
       endpoint: 'https://api.openai.com/v1/chat/completions',
       model: 'gpt-4o-mini'
+    },
+    gemini: {
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+      model: 'gemini-2.0-flash'
     }
   };
 
@@ -126,6 +130,31 @@ async function handleApiRequest({ provider, apiKey, prompt, options = {} }) {
       provider: 'openai',
       model: providerConfig.model,
       usage: data.usage
+    };
+  }
+
+  if (provider === 'gemini') {
+    const response = await fetch(`${providerConfig.endpoint}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error?.message || `Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      text: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+      provider: 'gemini',
+      model: providerConfig.model,
+      usage: data.usageMetadata
     };
   }
 }

@@ -168,15 +168,26 @@ async function loadSettings() {
 }
 
 /**
- * Update the "Get API key" link
+ * Update the "Get API key" link and placeholder
  */
 function updateKeyLink(provider) {
   const config = getProviderConfig(provider);
   const link = document.getElementById('get-key-link');
-  
+  const input = document.getElementById('api-key-input');
+
+  const placeholders = {
+    anthropic: 'sk-ant-...',
+    openai: 'sk-...',
+    gemini: 'AIza...'
+  };
+
   if (config) {
     link.href = config.keyUrl;
     link.textContent = `Get ${config.name.split(' ')[0]} API key →`;
+  }
+
+  if (input) {
+    input.placeholder = placeholders[provider] || 'Enter API key...';
   }
 }
 

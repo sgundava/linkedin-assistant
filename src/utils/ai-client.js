@@ -19,6 +19,12 @@ const PROVIDER_CONFIG = {
     model: 'gpt-4o-mini',
     name: 'GPT-4o mini (OpenAI)',
     keyUrl: 'https://platform.openai.com/api-keys'
+  },
+  gemini: {
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    model: 'gemini-2.0-flash',
+    name: 'Gemini (Google)',
+    keyUrl: 'https://aistudio.google.com/apikey'
   }
 };
 

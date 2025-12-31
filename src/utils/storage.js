@@ -121,12 +121,19 @@ export function validateAnthropicKey(key) {
   return key && key.startsWith('sk-ant-') && key.length > 40;
 }
 
+export function validateGeminiKey(key) {
+  // Google AI keys start with 'AIza' and are ~39 chars
+  return key && key.startsWith('AIza') && key.length > 30;
+}
+
 export function validateApiKey(provider, key) {
   switch (provider) {
     case 'openai':
       return validateOpenAIKey(key);
     case 'anthropic':
       return validateAnthropicKey(key);
+    case 'gemini':
+      return validateGeminiKey(key);
     default:
       return key && key.length > 20;
   }
