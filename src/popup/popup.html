@@ -10,7 +10,7 @@
   <div class="popup-container">
     <header class="popup-header">
       <h1>LinkedIn Assistant</h1>
-      <span class="version">v0.2.0</span>
+      <span class="version">v0.3.0</span>
     </header>
 
     <nav class="popup-tabs">
@@ -48,8 +48,8 @@
       </button>
 
       <div class="template-editor" id="template-editor" style="display: none;">
-        <input type="text" id="template-name" placeholder="Template name">
-        <textarea id="template-content" placeholder="Template content..."></textarea>
+        <input type="text" id="template-name" placeholder="Template name" aria-label="Template name">
+        <textarea id="template-content" placeholder="Template content..." aria-label="Template content"></textarea>
         <div class="editor-actions">
           <button class="btn secondary" id="cancel-template">Cancel</button>
           <button class="btn primary" id="save-template">Save</button>
@@ -76,6 +76,8 @@
             <option value="anthropic">Anthropic (Claude)</option>
             <option value="openai">OpenAI (GPT)</option>
             <option value="gemini">Google (Gemini)</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="grok">xAI (Grok)</option>
           </select>
           
           <label for="api-key-input">API Key</label>

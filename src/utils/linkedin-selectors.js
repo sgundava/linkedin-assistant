@@ -43,6 +43,12 @@ export const SELECTORS = {
 
     // Profile link in conversation
     profileLink: '.msg-thread__link-to-profile',
+
+    // Toolbar with attachment buttons (Photo, Attachment, GIF, etc.)
+    composeToolbar: '.msg-form__left-actions',
+
+    // Form footer (contains toolbar and send button)
+    formFooter: '.msg-form__footer',
   },
 
   // ===================
@@ -76,6 +82,24 @@ export const SELECTORS = {
   },
 
   // ===================
+  // PROFILE PAGE
+  // /in/{profile-handle}/
+  // ===================
+  profile: {
+    // Profile header info (multiple fallbacks - LinkedIn changes these often)
+    profileName: 'h1',  // Simpler - there's usually only one h1 on profile pages
+    profileHeadline: '.text-body-medium',
+
+    // Action buttons (to detect connection status)
+    messageButton: 'button[aria-label*="Message"]',
+    connectButton: 'button[aria-label*="Connect"]',
+
+    // Message modal (opens when clicking Message)
+    messageModal: '.msg-overlay-conversation-bubble',
+    modalComposeBox: '.msg-form__contenteditable',
+  },
+
+  // ===================
   // SHARED / COMMON
   // ===================
   common: {
@@ -92,7 +116,7 @@ export const SELECTORS = {
 
 /**
  * Detect which context we're in
- * Priority: Active chat bubble > Messaging page
+ * Priority: Active chat bubble > Any chat bubble > Messaging page > Profile page
  */
 export function getContext() {
   // Check for active chat bubble first (can appear on any page)
@@ -111,6 +135,12 @@ export function getContext() {
   const url = window.location.href;
   if (url.includes('/messaging/')) {
     return 'messaging';
+  }
+
+  // Check URL for profile page
+  const isProfilePage = /^\/in\/[a-z0-9-]+\/?/i.test(window.location.pathname);
+  if (isProfilePage) {
+    return 'profile';
   }
 
   return null;

@@ -1,20 +1,32 @@
 {
   "manifest_version": 3,
   "name": "LinkedIn Message Assistant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Draft professional LinkedIn responses with AI assistance",
-  
+
   "permissions": [
     "storage",
     "activeTab"
   ],
-  
+
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://api.openai.com/*",
     "https://api.anthropic.com/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.deepseek.com/*",
+    "https://api.x.ai/*"
   ],
+
+  "commands": {
+    "toggle-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+L",
+        "mac": "Alt+Shift+L"
+      },
+      "description": "Toggle the assistant panel"
+    }
+  },
   
   "action": {
     "default_popup": "src/popup/popup.html",

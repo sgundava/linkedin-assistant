@@ -5,7 +5,7 @@
  * Works in both messaging page and profile overlay contexts
  */
 
-import { getContext, getContextSelectors, safeQuery, waitForElement, getActiveBubbleContainer } from './linkedin-selectors.js';
+import { getContext, getContextSelectors, safeQuery, waitForElement, getActiveBubbleContainer, SELECTORS } from './linkedin-selectors.js';
 
 /**
  * Extract the latest message(s) from the current conversation
@@ -133,22 +133,61 @@ function extractRecentMessages(selectors, count = 5, container = document) {
 
 /**
  * Determine if a message is from the other person (vs you)
+ *
+ * IMPORTANT: Default to true (from other) unless we find positive "from me" indicators.
+ * This prevents misattributing incoming messages when selectors change.
  */
 function isMessageFromOther(messageElement) {
-  // LinkedIn typically marks your own messages differently
-  // This can vary, so we check multiple indicators
   const classList = messageElement.className || '';
-  
-  // Messages from others usually don't have these classes
-  if (classList.includes('msg-s-message-list__event--last-from-me') ||
-      classList.includes('msg-s-event-listitem--from-me')) {
+
+  // Check 1: Explicit "from me" classes (most reliable)
+  // LinkedIn uses various patterns - check for common ones
+  const fromMePatterns = [
+    'from-me',
+    'selfsend',
+    'outbound',
+    'sent'
+  ];
+
+  const classLower = classList.toLowerCase();
+  for (const pattern of fromMePatterns) {
+    if (classLower.includes(pattern)) {
+      return false;
+    }
+  }
+
+  // Check 2: Look for "from me" indicator within child elements
+  // LinkedIn sometimes nests these classes deeper in the DOM
+  const fromMeChild = messageElement.querySelector(
+    '[class*="from-me"], [class*="selfsend"], [class*="outbound"]'
+  );
+  if (fromMeChild) {
     return false;
   }
-  
-  // Check for profile image (other person's messages usually show their photo)
-  const hasAvatar = messageElement.querySelector('.presence-entity__image');
-  
-  return hasAvatar !== null;
+
+  // Check 3: Background color detection
+  // User's messages often have a tinted background (blue/gray) vs white for others
+  const msgBody = messageElement.querySelector('.msg-s-event-listitem__body');
+  if (msgBody) {
+    const bgColor = window.getComputedStyle(msgBody).backgroundColor;
+    // LinkedIn's "my message" backgrounds are typically tinted (not pure white/transparent)
+    // rgb(240, 244, 248) or similar blue-gray tints indicate user's message
+    if (bgColor && bgColor.includes('rgb')) {
+      const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (match) {
+        const [, r, g, b] = match.map(Number);
+        // If blue component is noticeably higher than red, likely user's message
+        // Or if it's a gray-blue tint (r < 245 and all similar)
+        if (b > r + 5 || (r > 230 && r < 250 && g > r)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // Default: Assume message is from the other person
+  // This is safer than assuming it's from "me" when detection fails
+  return true;
 }
 
 /**
@@ -222,13 +261,32 @@ const TONE_CONFIG = {
 };
 
 /**
+ * Length configurations for message generation
+ */
+const LENGTH_CONFIG = {
+  short: {
+    description: 'short',
+    instructions: '1-2 sentences. Get straight to the point.'
+  },
+  medium: {
+    description: 'medium-length',
+    instructions: '2-4 sentences. Balanced and complete, but concise.'
+  },
+  long: {
+    description: 'longer',
+    instructions: '4-6 sentences. More detailed and thorough, but still focused.'
+  }
+};
+
+/**
  * Build a prompt for the AI based on extracted context
  * @param {Object} conversationContext - The conversation context
  * @param {string} userIntent - What the user wants to say
  * @param {string} tone - The tone preset (or 'custom')
  * @param {string} customToneInstructions - Custom tone instructions when tone='custom'
+ * @param {string} length - The length preset ('short', 'medium', 'long')
  */
-export function buildAIPrompt(conversationContext, userIntent, tone = 'professional', customToneInstructions = '') {
+export function buildAIPrompt(conversationContext, userIntent, tone = 'professional', customToneInstructions = '', length = 'medium') {
   const { senderName, latestMessage, recentMessages } = conversationContext;
 
   let conversationHistory = '';
@@ -239,6 +297,7 @@ export function buildAIPrompt(conversationContext, userIntent, tone = 'professio
   }
 
   const toneConfig = TONE_CONFIG[tone] || TONE_CONFIG.professional;
+  const lengthConfig = LENGTH_CONFIG[length] || LENGTH_CONFIG.medium;
 
   // For custom tone, use user-provided instructions
   const toneDescription = tone === 'custom' && customToneInstructions
@@ -257,9 +316,11 @@ WHAT I WANT TO SAY: ${userIntent}
 
 TONE: ${toneInstructions}
 
+LENGTH: ${lengthConfig.instructions}
+
 IMPORTANT: You are writing a message FROM me TO ${senderName}. Respond to what ${senderName} said, not echo it. If ${senderName} congratulated me, I should thank them — not congratulate them back.
 
-Transform my intent into a ${toneDescription} LinkedIn message. Output only the message text, nothing else.`;
+Transform my intent into a ${toneDescription}, ${lengthConfig.description} LinkedIn message. Output only the message text, nothing else.`;
 }
 
 /**
@@ -289,4 +350,84 @@ Provide:
 4. **Suggested Response**: A brief intent for replying (e.g., "Thank them and close the loop", "Ask for more details about the role", "Politely decline"). If no response is needed, say "No response needed".
 
 Keep it brief and actionable.`;
+}
+
+/**
+ * Extract profile context from a LinkedIn profile page
+ */
+export function extractProfileContext() {
+  const selectors = SELECTORS.profile;
+
+  // Try multiple selectors for name (LinkedIn changes these)
+  const nameElement = document.querySelector(selectors.profileName) ||
+                      document.querySelector('h1.text-heading-xlarge') ||
+                      document.querySelector('.pv-top-card--list h1') ||
+                      document.querySelector('[data-anonymize="person-name"]');
+
+  const name = nameElement?.textContent?.trim();
+
+  // Try multiple selectors for headline
+  const headlineElement = document.querySelector(selectors.profileHeadline) ||
+                          document.querySelector('.text-body-medium.break-words') ||
+                          document.querySelector('.pv-top-card--list .text-body-medium');
+
+  const headline = headlineElement?.textContent?.trim();
+
+  // Check connection status by looking for Message/Connect buttons
+  const hasMessageButton = !!document.querySelector(selectors.messageButton);
+  const hasConnectButton = !!document.querySelector(selectors.connectButton);
+
+  return {
+    success: !!name,
+    context: 'profile',
+    profileName: name || 'Unknown',
+    profileHeadline: headline || '',
+    isConnected: hasMessageButton && !hasConnectButton,
+    canMessage: hasMessageButton,
+    timestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Build a prompt for first/cold outreach messages
+ * @param {Object} profileContext - The profile context from extractProfileContext
+ * @param {string} userIntent - What the user wants to say
+ * @param {string} tone - The tone preset (or 'custom')
+ * @param {string} customToneInstructions - Custom tone instructions when tone='custom'
+ * @param {string} length - The length preset ('short', 'medium', 'long')
+ */
+export function buildFirstMessagePrompt(profileContext, userIntent, tone = 'professional', customToneInstructions = '', length = 'medium') {
+  const { profileName, profileHeadline, isConnected } = profileContext;
+
+  const toneConfig = TONE_CONFIG[tone] || TONE_CONFIG.professional;
+  const lengthConfig = LENGTH_CONFIG[length] || LENGTH_CONFIG.medium;
+
+  // For custom tone, use user-provided instructions
+  const toneDescription = tone === 'custom' && customToneInstructions
+    ? customToneInstructions
+    : toneConfig.description;
+  const toneInstructions = tone === 'custom' && customToneInstructions
+    ? customToneInstructions
+    : `${toneConfig.description}. ${toneConfig.instructions}`;
+
+  const connectionContext = isConnected
+    ? 'You are already connected with this person on LinkedIn.'
+    : 'You are NOT yet connected — this may be sent as a connection request note or InMail.';
+
+  return `You are helping ME draft a FIRST message to ${profileName} on LinkedIn.
+
+RECIPIENT PROFILE:
+- Name: ${profileName}
+- Headline: ${profileHeadline || '[Not available]'}
+- ${connectionContext}
+
+MY INTENT: ${userIntent}
+
+TONE: ${toneInstructions}
+
+LENGTH: ${lengthConfig.instructions}
+
+IMPORTANT: This is a cold/first message — there is no prior conversation. Be personable but not overly familiar. If my intent references something specific about them (their role, company, post, etc.), weave that naturally into the message. Don't be generic or salesy.
+
+Generate a compelling, ${toneDescription} first message. Output only the message text, nothing else.`;
 }

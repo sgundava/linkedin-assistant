@@ -178,7 +178,9 @@ function updateKeyLink(provider) {
   const placeholders = {
     anthropic: 'sk-ant-...',
     openai: 'sk-...',
-    gemini: 'AIza...'
+    gemini: 'AIza...',
+    deepseek: 'sk-...',
+    grok: 'xai-...'
   };
 
   if (config) {

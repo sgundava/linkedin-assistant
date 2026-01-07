@@ -419,3 +419,69 @@
   color: #999;
   font-style: italic;
 }
+
+/* Length Selector */
+.li-assistant-length-section {
+  padding: 8px 16px;
+}
+
+.li-assistant-length-options {
+  display: flex;
+  gap: 6px;
+}
+
+.li-assistant-length-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.li-assistant-length-btn:hover {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+
+.li-assistant-length-btn.active {
+  background: #0a66c2;
+  border-color: #0a66c2;
+  color: white;
+}
+
+/* Toolbar Button (on messaging page) */
+#li-assistant-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+  vertical-align: middle;
+}
+
+#li-assistant-toolbar-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+#li-assistant-toolbar-btn:active {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+#li-assistant-toolbar-btn svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}

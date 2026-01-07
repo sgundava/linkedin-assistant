@@ -255,13 +255,13 @@ body {
 
 /* Provider Cards */
 .provider-cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
 .provider-card {
-  flex: 1;
-  padding: 12px;
+  padding: 10px 8px;
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;

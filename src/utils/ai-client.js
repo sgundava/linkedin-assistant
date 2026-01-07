@@ -25,6 +25,18 @@ const PROVIDER_CONFIG = {
     model: 'gemini-2.0-flash',
     name: 'Gemini (Google)',
     keyUrl: 'https://aistudio.google.com/apikey'
+  },
+  deepseek: {
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+    name: 'DeepSeek',
+    keyUrl: 'https://platform.deepseek.com/api_keys'
+  },
+  grok: {
+    endpoint: 'https://api.x.ai/v1/chat/completions',
+    model: 'grok-2-latest',
+    name: 'Grok (xAI)',
+    keyUrl: 'https://console.x.ai/'
   }
 };
 
@@ -64,77 +76,6 @@ export async function generateResponse(prompt, options = {}) {
       }
     );
   });
-}
-
-/**
- * Call Anthropic's Claude API
- */
-async function callAnthropic(apiKey, prompt, options = {}) {
-  const config = PROVIDER_CONFIG.anthropic;
-  
-  const response = await fetch(config.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: options.model || config.model,
-      max_tokens: options.maxTokens || 1024,
-      messages: [
-        { role: 'user', content: prompt }
-      ]
-    })
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `Anthropic API error: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return {
-    text: data.content[0]?.text || '',
-    provider: 'anthropic',
-    model: config.model,
-    usage: data.usage
-  };
-}
-
-/**
- * Call OpenAI's API
- */
-async function callOpenAI(apiKey, prompt, options = {}) {
-  const config = PROVIDER_CONFIG.openai;
-  
-  const response = await fetch(config.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: options.model || config.model,
-      max_tokens: options.maxTokens || 1024,
-      messages: [
-        { role: 'user', content: prompt }
-      ]
-    })
-  });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `OpenAI API error: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return {
-    text: data.choices[0]?.message?.content || '',
-    provider: 'openai',
-    model: config.model,
-    usage: data.usage
-  };
 }
 
 /**

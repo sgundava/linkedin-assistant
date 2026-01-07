@@ -7,10 +7,10 @@
  * 3. Response insertion into compose box
  */
 
-import { extractConversationContext, insertIntoComposeBox, buildAIPrompt, buildSummaryPrompt } from '../utils/message-extractor.js';
+import { extractConversationContext, insertIntoComposeBox, buildAIPrompt, buildSummaryPrompt, extractProfileContext, buildFirstMessagePrompt } from '../utils/message-extractor.js';
 import { getTemplates, getPreferences } from '../utils/storage.js';
 import { generateResponse, buildWebInterfaceUrl, getConfiguredProviders, getProviderConfig } from '../utils/ai-client.js';
-import { getAllOpenConversations } from '../utils/linkedin-selectors.js';
+import { getAllOpenConversations, SELECTORS, waitForElement, getContext } from '../utils/linkedin-selectors.js';
 
 // State
 let panelVisible = false;
@@ -23,19 +23,36 @@ let selectedConversation = null; // Track which conversation is selected
 async function init() {
   const preferences = await getPreferences();
 
-  // Always show floating button on LinkedIn (it checks for conversations when clicked)
   if (preferences.showFloatingButton) {
-    createFloatingButton();
+    // Check if we're on the messaging page
+    const isMessagingPage = window.location.href.includes('/messaging/');
+
+    if (isMessagingPage) {
+      // Try to inject into toolbar, fall back to FAB
+      const injected = await tryInjectToolbarButton();
+      if (!injected) {
+        createFloatingButton();
+      }
+    } else {
+      // On other pages (feed, profile, etc.), use floating button
+      createFloatingButton();
+    }
   }
 
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener(handleMessage);
+
+  // Watch for navigation changes (LinkedIn is an SPA)
+  observeUrlChanges();
 }
 
 /**
  * Create the floating action button
  */
 function createFloatingButton() {
+  // Don't create if already exists
+  if (document.getElementById('li-assistant-fab')) return;
+
   const button = document.createElement('button');
   button.id = 'li-assistant-fab';
   button.innerHTML = `
@@ -46,8 +63,96 @@ function createFloatingButton() {
   `;
   button.title = 'LinkedIn Message Assistant';
   button.addEventListener('click', togglePanel);
-  
+
   document.body.appendChild(button);
+}
+
+/**
+ * Try to inject button into LinkedIn's compose toolbar
+ * Returns true if successful, false otherwise
+ */
+async function tryInjectToolbarButton() {
+  // Don't create if already exists
+  if (document.getElementById('li-assistant-toolbar-btn')) return true;
+
+  try {
+    // Wait for the toolbar to appear (LinkedIn loads dynamically)
+    const toolbar = await waitForElement(SELECTORS.messaging.composeToolbar, 3000);
+
+    if (!toolbar) return false;
+
+    const button = document.createElement('button');
+    button.id = 'li-assistant-toolbar-btn';
+    button.type = 'button';
+    button.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <path d="M12 7v4M12 15h.01"></path>
+      </svg>
+    `;
+    button.title = 'AI Assistant';
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePanel();
+    });
+
+    // Insert at the end of the toolbar
+    toolbar.appendChild(button);
+    return true;
+  } catch (error) {
+    console.log('[LinkedIn Assistant] Could not inject toolbar button, using FAB instead');
+    return false;
+  }
+}
+
+/**
+ * Remove all assistant buttons (for cleanup during navigation)
+ */
+function removeAllButtons() {
+  const fab = document.getElementById('li-assistant-fab');
+  const toolbarBtn = document.getElementById('li-assistant-toolbar-btn');
+  if (fab) fab.remove();
+  if (toolbarBtn) toolbarBtn.remove();
+  closePanel();
+}
+
+/**
+ * Observe URL changes for SPA navigation
+ */
+function observeUrlChanges() {
+  let lastUrl = window.location.href;
+
+  // Use MutationObserver to detect LinkedIn's SPA navigation
+  const observer = new MutationObserver(async () => {
+    const currentUrl = window.location.href;
+    if (currentUrl !== lastUrl) {
+      lastUrl = currentUrl;
+
+      // Clean up existing buttons
+      removeAllButtons();
+
+      // Re-initialize with appropriate button type
+      const preferences = await getPreferences();
+      if (preferences.showFloatingButton) {
+        const isMessagingPage = currentUrl.includes('/messaging/');
+
+        if (isMessagingPage) {
+          // Small delay to let LinkedIn render the new page
+          setTimeout(async () => {
+            const injected = await tryInjectToolbarButton();
+            if (!injected) {
+              createFloatingButton();
+            }
+          }, 500);
+        } else {
+          createFloatingButton();
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 /**
@@ -65,7 +170,22 @@ async function togglePanel() {
  * Open the assistant panel
  */
 async function openPanel() {
-  // Check for multiple open conversations
+  // Check if we're on a profile page
+  const context = getContext();
+
+  if (context === 'profile') {
+    // Profile page - extract profile info for first message
+    const profileContext = extractProfileContext();
+    currentContext = profileContext;
+
+    const panel = createPanel();
+    document.body.appendChild(panel);
+    panelVisible = true;
+    populateProfilePanel(panel, profileContext);
+    return;
+  }
+
+  // Check for open conversations (messaging page or chat bubbles)
   const conversations = getAllOpenConversations();
 
   if (conversations.length === 0) {
@@ -205,6 +325,15 @@ function createPanel() {
       <input type="text" class="li-assistant-custom-tone" placeholder="e.g., sarcastic, formal British, Gen-Z..." style="display: none;">
     </div>
 
+    <div class="li-assistant-section li-assistant-length-section">
+      <label>Length</label>
+      <div class="li-assistant-length-options">
+        <button class="li-assistant-length-btn" data-length="short">Short</button>
+        <button class="li-assistant-length-btn active" data-length="medium">Medium</button>
+        <button class="li-assistant-length-btn" data-length="long">Long</button>
+      </div>
+    </div>
+
     <div class="li-assistant-actions">
       <button class="li-assistant-btn secondary" id="li-open-external">
         Open in Claude ↗
@@ -251,6 +380,14 @@ function createPanel() {
       } else {
         customInput.style.display = 'none';
       }
+    });
+  });
+
+  // Length button toggles
+  panel.querySelectorAll('.li-assistant-length-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      panel.querySelectorAll('.li-assistant-length-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
     });
   });
 
@@ -309,6 +446,52 @@ async function populatePanel(panel, context) {
 }
 
 /**
+ * Populate the panel for profile page (first message mode)
+ */
+async function populateProfilePanel(panel, context) {
+  // Show profile info instead of conversation
+  panel.querySelector('.li-assistant-sender').textContent =
+    `New message to ${context.profileName}`;
+
+  const messageEl = panel.querySelector('.li-assistant-message');
+  messageEl.textContent = context.profileHeadline || 'LinkedIn Member';
+
+  // Hide summarize button (no conversation to summarize)
+  panel.querySelector('#li-summarize').style.display = 'none';
+
+  // Update placeholder for first message intent
+  panel.querySelector('.li-assistant-intent').placeholder =
+    'e.g., Ask about their role at [Company], Request a coffee chat, Reconnect after meeting at [Event]...';
+
+  // Hide conversation selector (not applicable for profiles)
+  panel.querySelector('.li-assistant-conversation-selector').style.display = 'none';
+
+  // Clear any previous state
+  panel.querySelector('.li-assistant-summary').style.display = 'none';
+  panel.querySelector('.li-assistant-result').style.display = 'none';
+
+  // Update Insert button based on whether they can message
+  const insertBtn = panel.querySelector('#li-insert');
+  if (!context.canMessage) {
+    insertBtn.textContent = 'Copy';
+    insertBtn.title = 'No Message button available - copy to clipboard instead';
+  }
+
+  // Load templates
+  const templates = await getTemplates();
+  const templatesContainer = panel.querySelector('.li-assistant-templates');
+  templatesContainer.innerHTML = '';
+
+  templates.forEach(template => {
+    const btn = document.createElement('button');
+    btn.className = 'li-assistant-template-btn';
+    btn.textContent = template.name;
+    btn.addEventListener('click', () => handleTemplateClick(template));
+    templatesContainer.appendChild(btn);
+  });
+}
+
+/**
  * Handle template button click
  */
 function handleTemplateClick(template) {
@@ -340,6 +523,7 @@ async function handleGenerate() {
   // Get selected tone and custom instructions
   const selectedTone = panel.querySelector('.li-assistant-tone-btn.active')?.dataset.tone || 'professional';
   const customToneInput = panel.querySelector('.li-assistant-custom-tone').value.trim();
+  const selectedLength = panel.querySelector('.li-assistant-length-btn.active')?.dataset.length || 'medium';
 
   // Validate custom tone has input
   if (selectedTone === 'custom' && !customToneInput) {
@@ -358,7 +542,14 @@ async function handleGenerate() {
   panel.querySelector('.li-assistant-result').style.display = 'none';
 
   try {
-    const prompt = buildAIPrompt(currentContext, intent, selectedTone, customToneInput);
+    // Use appropriate prompt builder based on context
+    let prompt;
+    if (currentContext.context === 'profile') {
+      prompt = buildFirstMessagePrompt(currentContext, intent, selectedTone, customToneInput, selectedLength);
+    } else {
+      prompt = buildAIPrompt(currentContext, intent, selectedTone, customToneInput, selectedLength);
+    }
+
     const result = await generateResponse(prompt);
 
     // Show result
@@ -404,7 +595,22 @@ async function handleInsert() {
   const response = document.querySelector('.li-assistant-response').textContent;
 
   try {
-    // Pass the selected conversation's container to insert into the correct bubble
+    // Profile context - need to open message modal first
+    if (currentContext.context === 'profile') {
+      if (!currentContext.canMessage) {
+        // No message button - just copy to clipboard
+        await navigator.clipboard.writeText(response);
+        showToast('Copied to clipboard! (No Message button available)');
+        return;
+      }
+
+      await insertIntoProfileMessage(response);
+      showToast('Inserted into message box');
+      closePanel();
+      return;
+    }
+
+    // Regular conversation context
     const container = selectedConversation?.container || null;
     await insertIntoComposeBox(response, container);
     showToast('Inserted into message box');
@@ -412,6 +618,41 @@ async function handleInsert() {
   } catch (error) {
     showToast(`Could not insert: ${error.message}`);
   }
+}
+
+/**
+ * Insert text into profile message modal
+ * Opens the message modal if needed, then inserts
+ */
+async function insertIntoProfileMessage(text) {
+  // Check if modal is already open
+  let composeBox = document.querySelector('.msg-form__contenteditable');
+
+  if (!composeBox) {
+    // Click the message button to open modal
+    const messageBtn = document.querySelector(SELECTORS.profile.messageButton);
+    if (!messageBtn) {
+      throw new Error('Message button not found');
+    }
+
+    messageBtn.click();
+
+    // Wait for modal compose box to appear
+    composeBox = await waitForElement('.msg-form__contenteditable', 3000);
+    if (!composeBox) {
+      throw new Error('Could not open message modal');
+    }
+  }
+
+  // Insert text into compose box
+  composeBox.focus();
+
+  // Small delay to ensure focus is set
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  document.execCommand('selectAll', false, null);
+  document.execCommand('insertText', false, text);
+  composeBox.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 /**
@@ -498,12 +739,18 @@ function handleMessage(message, sender, sendResponse) {
     extractConversationContext().then(sendResponse);
     return true; // Keep channel open for async response
   }
-  
+
   if (message.action === 'insertText') {
     const container = selectedConversation?.container || null;
     insertIntoComposeBox(message.text, container)
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.action === 'togglePanel') {
+    togglePanel();
+    sendResponse({ success: true });
     return true;
   }
 }

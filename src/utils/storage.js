@@ -126,6 +126,16 @@ export function validateGeminiKey(key) {
   return key && key.startsWith('AIza') && key.length > 30;
 }
 
+export function validateDeepSeekKey(key) {
+  // DeepSeek keys start with 'sk-' and are typically 32+ chars
+  return key && key.startsWith('sk-') && key.length > 30;
+}
+
+export function validateGrokKey(key) {
+  // xAI/Grok keys start with 'xai-' and are typically 50+ chars
+  return key && key.startsWith('xai-') && key.length > 40;
+}
+
 export function validateApiKey(provider, key) {
   switch (provider) {
     case 'openai':
@@ -134,6 +144,10 @@ export function validateApiKey(provider, key) {
       return validateAnthropicKey(key);
     case 'gemini':
       return validateGeminiKey(key);
+    case 'deepseek':
+      return validateDeepSeekKey(key);
+    case 'grok':
+      return validateGrokKey(key);
     default:
       return key && key.length > 20;
   }

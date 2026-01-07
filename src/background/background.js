@@ -11,11 +11,23 @@
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     console.log('[LinkedIn Assistant] Extension installed');
-    
+
     // Open welcome/setup page on first install
     // chrome.tabs.create({ url: 'welcome.html' });
   } else if (details.reason === 'update') {
     console.log('[LinkedIn Assistant] Extension updated to', chrome.runtime.getManifest().version);
+  }
+});
+
+// Listen for keyboard shortcut commands
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'toggle-panel') {
+    // Send toggle message to active LinkedIn tab
+    chrome.tabs.query({ url: 'https://www.linkedin.com/*', active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'togglePanel' });
+      }
+    });
   }
 });
 
@@ -67,6 +79,14 @@ async function handleApiRequest({ provider, apiKey, prompt, options = {} }) {
     gemini: {
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
       model: 'gemini-2.0-flash'
+    },
+    deepseek: {
+      endpoint: 'https://api.deepseek.com/chat/completions',
+      model: 'deepseek-chat'
+    },
+    grok: {
+      endpoint: 'https://api.x.ai/v1/chat/completions',
+      model: 'grok-2-latest'
     }
   };
 
@@ -155,6 +175,64 @@ async function handleApiRequest({ provider, apiKey, prompt, options = {} }) {
       provider: 'gemini',
       model: providerConfig.model,
       usage: data.usageMetadata
+    };
+  }
+
+  if (provider === 'deepseek') {
+    // DeepSeek uses OpenAI-compatible API
+    const response = await fetch(providerConfig.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: options.model || providerConfig.model,
+        max_tokens: options.maxTokens || 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error?.message || `DeepSeek API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      text: data.choices[0]?.message?.content || '',
+      provider: 'deepseek',
+      model: providerConfig.model,
+      usage: data.usage
+    };
+  }
+
+  if (provider === 'grok') {
+    // Grok uses OpenAI-compatible API
+    const response = await fetch(providerConfig.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: options.model || providerConfig.model,
+        max_tokens: options.maxTokens || 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error?.message || `Grok API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      text: data.choices[0]?.message?.content || '',
+      provider: 'grok',
+      model: providerConfig.model,
+      usage: data.usage
     };
   }
 }
