@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **LinkedIn Message Assistant**
-*Last updated: December 2025*
+*Last updated: January 2026*
 
 ## Overview
 
@@ -22,7 +22,7 @@ We do not collect, store, transmit, or process any personal data. There are no a
 ## Data Storage
 
 ### API Keys
-- Your AI provider API keys (Anthropic, OpenAI) are stored **locally in your browser** using Chrome's `storage.local` API
+- Your AI provider API keys (Anthropic, OpenAI, Google, DeepSeek, xAI) are stored **locally in your browser** using Chrome's `storage.local` API
 - Keys never leave your device except when making direct API calls to your chosen provider
 - Keys are never synced across devices, even if you use Chrome Sync
 
@@ -39,7 +39,7 @@ We do not collect, store, transmit, or process any personal data. There are no a
 When you click "Generate Response" or "Summarize Conversation":
 
 1. The extension reads the visible conversation from your LinkedIn page
-2. This conversation text is sent **directly from your browser** to your chosen AI provider (Anthropic or OpenAI)
+2. This conversation text is sent **directly from your browser** to your chosen AI provider (Anthropic, OpenAI, Google, DeepSeek, or xAI)
 3. The AI provider processes the request and returns a response
 4. The response is displayed in the extension
 
@@ -52,16 +52,22 @@ This extension communicates with:
 |---------|------|-------------|
 | Anthropic API | When using Claude | Conversation context + your prompt |
 | OpenAI API | When using GPT | Conversation context + your prompt |
+| Google AI API | When using Gemini | Conversation context + your prompt |
+| DeepSeek API | When using DeepSeek | Conversation context + your prompt |
+| xAI API | When using Grok | Conversation context + your prompt |
 
 These services have their own privacy policies:
 - [Anthropic Privacy Policy](https://www.anthropic.com/privacy)
 - [OpenAI Privacy Policy](https://openai.com/privacy)
+- [Google AI Privacy Policy](https://ai.google.dev/gemini-api/terms)
+- [DeepSeek Privacy Policy](https://www.deepseek.com/privacy)
+- [xAI Privacy Policy](https://x.ai/legal/privacy-policy)
 
 ---
 
 ## LinkedIn Data
 
-- The extension reads LinkedIn message content **only** from pages you are actively viewing
+- The extension reads LinkedIn message content and profile information **only** from pages you are actively viewing
 - This data is used solely to provide context for AI-generated responses
 - We do not scrape, store, or export your LinkedIn data
 - We do not access your LinkedIn credentials
@@ -75,7 +81,7 @@ These services have their own privacy policies:
 | `storage` | To save your API keys and preferences locally |
 | `activeTab` | To read conversation content from the LinkedIn page you're viewing |
 | `host_permissions: linkedin.com` | To inject the assistant UI into LinkedIn pages |
-| `host_permissions: anthropic.com, openai.com` | To make API calls to AI providers |
+| `host_permissions: anthropic.com, openai.com, googleapis.com, deepseek.com, x.ai` | To make API calls to AI providers |
 
 ---
 
@@ -121,5 +127,5 @@ If you have questions about this privacy policy, please open an issue on our Git
 | Do you sell my data? | No (we don't have it) |
 | Do you track me? | No |
 | Where are my API keys stored? | Locally in your browser only |
-| Who sees my conversations? | Only the AI provider you choose, when you click Generate or Summarize |
+| Who sees my conversations? | Only the AI provider you choose (Anthropic, OpenAI, Google, DeepSeek, or xAI), when you click Generate or Summarize |
 | Do you have servers? | No |
